@@ -1,0 +1,68 @@
+# Replay fixture for demos/session3.txt (canned model text only; everything else runs for real).
+- purpose: edit.plan
+  match: in the model and the task routes
+  response: "{\n \"summary\": \"Rename Task.title to Task.name in the dataclass, TaskStore.add_task and the create/update\
+    \ endpoints.\",\n \"edits\": [\n  {\n   \"path\": \"models.py\",\n   \"search\": \"    id: int\\n    title: str\\n\",\n\
+    \   \"replace\": \"    id: int\\n    name: str\\n\"\n  },\n  {\n   \"path\": \"models.py\",\n   \"search\": \"    def\
+    \ add_task(self, title: str, description: str = \\\"\\\", owner_id: int | None = None) -> Task:\\n        task = Task(id=next(self._task_ids),\
+    \ title=title,\",\n   \"replace\": \"    def add_task(self, name: str, description: str = \\\"\\\", owner_id: int | None\
+    \ = None) -> Task:\\n        task = Task(id=next(self._task_ids), name=name,\"\n  },\n  {\n   \"path\": \"routes/tasks.py\"\
+    ,\n   \"search\": \"    title = payload.get(\\\"title\\\")\\n    if not isinstance(title, str) or not title.strip():\\\
+    n        return jsonify({\\\"error\\\": \\\"title must be a non-empty string\\\"}), 400\\n    task = _store().add_task(\\\
+    n        title=title.strip(),\",\n   \"replace\": \"    name = payload.get(\\\"name\\\")\\n    if not isinstance(name,\
+    \ str) or not name.strip():\\n        return jsonify({\\\"error\\\": \\\"title must be a non-empty string\\\"}), 400\\\
+    n    task = _store().add_task(\\n        name=name.strip(),\"\n  },\n  {\n   \"path\": \"routes/tasks.py\",\n   \"search\"\
+    : \"    if \\\"title\\\" in payload:\\n        task.title = payload[\\\"title\\\"]\",\n   \"replace\": \"    if \\\"name\\\
+    \" in payload:\\n        task.name = payload[\\\"name\\\"]\"\n  }\n ]\n}"
+- purpose: edit.plan
+  match: in the model and the task routes
+  response: "{\n \"summary\": \"Rename Task.title to Task.name in the dataclass, TaskStore.add_task and the create/update\
+    \ endpoints.\",\n \"edits\": [\n  {\n   \"path\": \"models.py\",\n   \"search\": \"    id: int\\n    title: str\\n\",\n\
+    \   \"replace\": \"    id: int\\n    name: str\\n\"\n  },\n  {\n   \"path\": \"models.py\",\n   \"search\": \"    def\
+    \ add_task(self, title: str, description: str = \\\"\\\", owner_id: int | None = None) -> Task:\\n        task = Task(id=next(self._task_ids),\
+    \ title=title,\",\n   \"replace\": \"    def add_task(self, name: str, description: str = \\\"\\\", owner_id: int | None\
+    \ = None) -> Task:\\n        task = Task(id=next(self._task_ids), name=name,\"\n  },\n  {\n   \"path\": \"routes/tasks.py\"\
+    ,\n   \"search\": \"    title = payload.get(\\\"title\\\")\\n    if not isinstance(title, str) or not title.strip():\\\
+    n        return jsonify({\\\"error\\\": \\\"title must be a non-empty string\\\"}), 400\\n    task = _store().add_task(\\\
+    n        title=title.strip(),\",\n   \"replace\": \"    name = payload.get(\\\"name\\\")\\n    if not isinstance(name,\
+    \ str) or not name.strip():\\n        return jsonify({\\\"error\\\": \\\"title must be a non-empty string\\\"}), 400\\\
+    n    task = _store().add_task(\\n        name=name.strip(),\"\n  },\n  {\n   \"path\": \"routes/tasks.py\",\n   \"search\"\
+    : \"    if \\\"title\\\" in payload:\\n        task.title = payload[\\\"title\\\"]\",\n   \"replace\": \"    if \\\"name\\\
+    \" in payload:\\n        task.name = payload[\\\"name\\\"]\"\n  }\n ]\n}"
+- purpose: edit.fix
+  match: regression
+  response: "{\n \"summary\": \"Align the validation error message with the renamed field.\",\n \"edits\": [\n  {\n   \"path\"\
+    : \"routes/tasks.py\",\n   \"search\": \"        return jsonify({\\\"error\\\": \\\"title must be a non-empty string\\\
+    \"}), 400\",\n   \"replace\": \"        return jsonify({\\\"error\\\": \\\"name must be a non-empty string\\\"}), 400\"\
+    \n  }\n ]\n}"
+- purpose: edit.plan
+  match: update the tests to match
+  response: "{\n \"summary\": \"Rename Task.title to Task.name across the model, the create/update endpoints and the tests\
+    \ (request payloads and response assertions).\",\n \"edits\": [\n  {\n   \"path\": \"models.py\",\n   \"search\": \" \
+    \   id: int\\n    title: str\\n\",\n   \"replace\": \"    id: int\\n    name: str\\n\"\n  },\n  {\n   \"path\": \"models.py\"\
+    ,\n   \"search\": \"    def add_task(self, title: str, description: str = \\\"\\\", owner_id: int | None = None) -> Task:\\\
+    n        task = Task(id=next(self._task_ids), title=title,\",\n   \"replace\": \"    def add_task(self, name: str, description:\
+    \ str = \\\"\\\", owner_id: int | None = None) -> Task:\\n        task = Task(id=next(self._task_ids), name=name,\"\n\
+    \  },\n  {\n   \"path\": \"routes/tasks.py\",\n   \"search\": \"    title = payload.get(\\\"title\\\")\\n    if not isinstance(title,\
+    \ str) or not title.strip():\\n        return jsonify({\\\"error\\\": \\\"title must be a non-empty string\\\"}), 400\\\
+    n    task = _store().add_task(\\n        title=title.strip(),\",\n   \"replace\": \"    name = payload.get(\\\"name\\\"\
+    )\\n    if not isinstance(name, str) or not name.strip():\\n        return jsonify({\\\"error\\\": \\\"name must be a\
+    \ non-empty string\\\"}), 400\\n    task = _store().add_task(\\n        name=name.strip(),\"\n  },\n  {\n   \"path\":\
+    \ \"routes/tasks.py\",\n   \"search\": \"    if \\\"title\\\" in payload:\\n        task.title = payload[\\\"title\\\"\
+    ]\",\n   \"replace\": \"    if \\\"name\\\" in payload:\\n        task.name = payload[\\\"name\\\"]\"\n  },\n  {\n   \"\
+    path\": \"tests/test_tasks.py\",\n   \"search\": \"    resp = client.post(\\\"/tasks\\\", json={\\\"title\\\": \\\"Write\
+    \ report\\\"})\\n    assert resp.status_code == 201\\n    assert resp.get_json()[\\\"title\\\"] == \\\"Write report\\\"\
+    \",\n   \"replace\": \"    resp = client.post(\\\"/tasks\\\", json={\\\"name\\\": \\\"Write report\\\"})\\n    assert\
+    \ resp.status_code == 201\\n    assert resp.get_json()[\\\"name\\\"] == \\\"Write report\\\"\"\n  },\n  {\n   \"path\"\
+    : \"tests/test_tasks.py\",\n   \"search\": \"    for bad in ({}, {\\\"title\\\": \\\"\\\"}, {\\\"title\\\": \\\"   \\\"\
+    }, {\\\"title\\\": 42}):\",\n   \"replace\": \"    for bad in ({}, {\\\"name\\\": \\\"\\\"}, {\\\"name\\\": \\\"   \\\"\
+    }, {\\\"name\\\": 42}):\"\n  },\n  {\n   \"path\": \"tests/test_tasks.py\",\n   \"search\": \"        client.post(\\\"\
+    /tasks\\\", json={\\\"title\\\": f\\\"task {i}\\\"})\",\n   \"replace\": \"        client.post(\\\"/tasks\\\", json={\\\
+    \"name\\\": f\\\"task {i}\\\"})\"\n  },\n  {\n   \"path\": \"tests/test_tasks.py\",\n   \"search\": \"    assert [t[\\\
+    \"title\\\"] for t in items] == [\\\"task 0\\\", \\\"task 1\\\"]\",\n   \"replace\": \"    assert [t[\\\"name\\\"] for\
+    \ t in items] == [\\\"task 0\\\", \\\"task 1\\\"]\"\n  },\n  {\n   \"path\": \"tests/test_tasks.py\",\n   \"search\":\
+    \ \"def test_update_task_status(client):\\n    task_id = client.post(\\\"/tasks\\\", json={\\\"title\\\": \\\"t\\\"})\"\
+    ,\n   \"replace\": \"def test_update_task_status(client):\\n    task_id = client.post(\\\"/tasks\\\", json={\\\"name\\\
+    \": \\\"t\\\"})\"\n  },\n  {\n   \"path\": \"tests/test_tasks.py\",\n   \"search\": \"def test_update_task_rejects_bad_status(client):\\\
+    n    task_id = client.post(\\\"/tasks\\\", json={\\\"title\\\": \\\"t\\\"})\",\n   \"replace\": \"def test_update_task_rejects_bad_status(client):\\\
+    n    task_id = client.post(\\\"/tasks\\\", json={\\\"name\\\": \\\"t\\\"})\"\n  }\n ]\n}"

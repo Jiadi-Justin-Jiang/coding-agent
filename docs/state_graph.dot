@@ -1,0 +1,87 @@
+digraph G {
+rankdir=TB; nodesep=0.35; ranksep=0.45; fontname="Helvetica";
+node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, fillcolor="#ffffff"];
+edge [fontname="Helvetica", fontsize=9, color="#555555"];
+__start__ [label="user request", shape=oval, fillcolor="#111827", fontcolor=white];
+__end__ [label="response", shape=oval, fillcolor="#111827", fontcolor=white];
+route [label="route\n(rules → LLM fallback)", fillcolor="#fde68a"];
+load_context [label="load_context\n(retrieve memory)", fillcolor="#bbf7d0"];
+recover [label="recover\n(rollback open txn)", fillcolor="#fecaca"];
+finalize [label="finalize\n(promote to session memory)", fillcolor="#e5e7eb"];
+subgraph cluster_chat { label="Fallback"; style="rounded,filled"; fillcolor="#f3f4f6"; color="#9ca3af"; fontsize=12;
+  chat_answer [label="answer"];
+}
+subgraph cluster_correct { label="Correction"; style="rounded,filled"; fillcolor="#fee2e2"; color="#9ca3af"; fontsize=12;
+  correct_decide [label="decide"];
+  correct_undo [label="undo"];
+  correct_revise [label="revise"];
+}
+subgraph cluster_edit { label="Edit (verify + self-correct)"; style="rounded,filled"; fillcolor="#dcfce7"; color="#9ca3af"; fontsize=12;
+  edit_locate [label="locate"];
+  edit_read [label="read"];
+  edit_plan [label="plan"];
+  edit_apply [label="apply"];
+  edit_patch_retry [label="patch_retry"];
+  edit_verify [label="verify"];
+  edit_fix [label="fix"];
+  edit_rollback [label="rollback"];
+}
+subgraph cluster_explore { label="Read / Explore"; style="rounded,filled"; fillcolor="#dbeafe"; color="#9ca3af"; fontsize=12;
+  explore_locate [label="locate"];
+  explore_read [label="read"];
+  explore_explain [label="explain"];
+}
+subgraph cluster_remember { label="Persistent memory"; style="rounded,filled"; fillcolor="#ede9fe"; color="#9ca3af"; fontsize=12;
+  remember_store [label="store"];
+}
+subgraph cluster_run { label="Run & React"; style="rounded,filled"; fillcolor="#fef3c7"; color="#9ca3af"; fontsize=12;
+  run_execute [label="execute"];
+  run_analyze [label="analyze"];
+}
+__start__ -> route;
+chat_answer -> finalize [style=dashed];
+correct_decide -> correct_revise [style=dashed];
+correct_decide -> correct_undo [style=dashed];
+correct_decide -> explore_read [style=dashed];
+correct_decide -> finalize [style=dashed];
+correct_revise -> edit_read [style=dashed];
+correct_revise -> finalize [style=dashed];
+correct_undo -> finalize [style=dashed];
+edit_apply -> edit_patch_retry [style=dashed];
+edit_apply -> edit_verify [style=dashed];
+edit_apply -> finalize [style=dashed];
+edit_fix -> edit_apply [style=dashed, color="#dc2626"];
+edit_fix -> edit_rollback [style=dashed];
+edit_locate -> edit_read [style=dashed];
+edit_locate -> finalize [style=dashed];
+edit_patch_retry -> edit_fix [style=dashed];
+edit_patch_retry -> edit_plan [style=dashed];
+edit_patch_retry -> edit_rollback [style=dashed];
+edit_plan -> edit_apply [style=dashed];
+edit_plan -> finalize [style=dashed];
+edit_read -> edit_plan [style=dashed];
+edit_read -> finalize [style=dashed];
+edit_rollback -> finalize [style=dashed];
+edit_verify -> edit_fix [style=dashed, color="#dc2626", label=" fail &\n budget ok"];
+edit_verify -> edit_rollback [style=dashed];
+edit_verify -> finalize [style=dashed];
+explore_explain -> finalize [style=dashed];
+explore_locate -> explore_explain [style=dashed];
+explore_locate -> explore_read [style=dashed];
+explore_read -> explore_explain [style=dashed];
+load_context -> chat_answer [style=dashed];
+load_context -> correct_decide [style=dashed];
+load_context -> edit_locate [style=dashed];
+load_context -> explore_locate [style=dashed];
+load_context -> remember_store [style=dashed];
+load_context -> run_execute [style=dashed];
+recover -> finalize;
+remember_store -> finalize [style=dashed];
+route -> load_context [style=dashed];
+run_analyze -> edit_locate [style=dashed];
+run_analyze -> finalize [style=dashed];
+run_execute -> finalize [style=dashed];
+run_execute -> run_analyze [style=dashed];
+finalize -> __end__;
+note [shape=note, fillcolor="#fff7ed", label="Every node also has a guarded edge → recover\n(exceptions, step budget). Dashed = conditional."];
+}

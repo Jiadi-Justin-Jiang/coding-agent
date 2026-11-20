@@ -1,0 +1,7 @@
+# Session 2 — NEW process: persistent preference applied, lint auto-fix, policy self-correction,
+# LLM-routed ambiguous request, user correction ("that's wrong"), undo, and a trace.
+/prefs
+GET /tasks/<id> returns a 500 for unknown ids — return a 404 JSON error instead
+That's wrong — use the same "task not found" error message as the other endpoints
+undo that
+/trace 2

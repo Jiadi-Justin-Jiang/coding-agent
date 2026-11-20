@@ -1,0 +1,9 @@
+langgraph>=1.0
+mcp>=1.9,<2
+anthropic>=0.40
+pyyaml>=6
+jsonschema>=4
+rich>=13
+ruff>=0.5
+pytest>=8
+flask>=3

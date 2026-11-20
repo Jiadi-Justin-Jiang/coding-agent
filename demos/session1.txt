@@ -1,0 +1,8 @@
+# Session 1 — the sample interaction from the brief: explore → edit → run → fix → remember
+What files are in this project?
+Show me how tasks are created
+The create task endpoint accepts empty titles. Add validation to reject them.
+Run the tests
+Fix the failing test
+Always add docstrings when you edit functions. Remember that.
+/trace

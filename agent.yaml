@@ -1,0 +1,44 @@
+# coding-agent configuration. Every key is optional (see coding_agent/config.py DEFAULTS).
+workspace: ./target_project
+
+llm:
+  provider: anthropic          # anthropic | openai | replay   (env: AGENT_LLM)
+  model: claude-sonnet-4-5     # env: AGENT_MODEL
+  # replay_file: demos/fixtures/session1.yaml
+
+# MCP servers are discovered at start-up; their tools are namespaced <server>.<tool>.
+mcp_servers:
+  fs:
+    command: "{python}"
+    args: ["-m", "coding_agent.mcp_servers.filesystem", "--root", "{workspace}"]
+  shell:
+    command: "{python}"
+    args: ["-m", "coding_agent.mcp_servers.shell", "--root", "{workspace}",
+           "--allow", "python,python3,pytest,ruff,git,ls"]
+  # Swap in the community filesystem server instead (needs Node):
+  # fs:
+  #   command: npx
+  #   args: ["-y", "@modelcontextprotocol/server-filesystem", "{workspace}"]
+
+# capability -> tool mapping. Override to point the agent at differently-named tools.
+capabilities: {}
+#  read_file: fs.read_text_file
+
+commands:
+  test: "python -m pytest -q --tb=short -rfE -p no:cacheprovider"
+  lint: "ruff check --output-format json --no-cache"
+  lint_fix: "ruff check --fix --output-format json --no-cache"
+
+limits:
+  max_fix_attempts: 3      # self-correction rounds per request
+  max_plan_retries: 2      # re-plans after a patch fails to apply
+  max_steps: 40            # graph node budget per request (loop backstop)
+  max_files_per_task: 3
+
+memory:
+  persistent_path: ~/.coding_agent/memory.json   # env: AGENT_MEMORY_PATH
+  context_budget_tokens: 1200
+  keep_recent_turns: 6
+  max_cached_files: 8
+
+on_unresolved_failure: rollback   # rollback | keep

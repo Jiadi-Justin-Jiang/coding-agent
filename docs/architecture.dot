@@ -1,0 +1,49 @@
+digraph A {
+  rankdir=LR; fontname="Helvetica"; nodesep=0.3; ranksep=0.55; compound=true;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, fillcolor="#ffffff"];
+  edge [fontname="Helvetica", fontsize=9, color="#4b5563"];
+
+  user [label="Developer\n(CLI / REPL)", shape=oval, fillcolor="#111827", fontcolor=white];
+
+  subgraph cluster_orch { label="Orchestrator (LangGraph StateGraph)"; style="rounded,filled"; fillcolor="#fef9c3"; color="#ca8a04";
+    router [label="Hybrid router\nrules → LLM fallback\n(validated against registry)"];
+    traj [label="Trajectory registry\nexplore · edit · run · correct\nremember · chat  (+ plug-ins)"];
+    working [label="Working memory\n= graph state (per request)", fillcolor="#dcfce7"];
+    guard [label="Guards\nerror → recover edge\nstep budget · recursion_limit", fillcolor="#fee2e2"];
+  }
+
+  subgraph cluster_mem { label="Memory tiers"; style="rounded,filled"; fillcolor="#dcfce7"; color="#16a34a";
+    session [label="Session memory\nturns · files (LRU, hash-checked)\ncommands + parsed failures\nrolling summary · retrieval scorer"];
+    persistent [label="Persistent memory (JSON, atomic)\npreferences (+ enforceable policy)\nlessons from corrections (decaying)"];
+  }
+
+  subgraph cluster_fb { label="Feedback"; style="rounded,filled"; fillcolor="#fee2e2"; color="#dc2626";
+    parsers [label="pytest / ruff parsers\nbaseline vs regression"];
+    policies [label="Policy checks (AST)\ne.g. require_docstrings"];
+    loop [label="Loop guard\nbudget · no-progress sig · worse"];
+    journal [label="Edit journal\ntransactions · rollback\n(optimistic concurrency)"];
+  }
+
+  subgraph cluster_tools { label="Tool layer"; style="rounded,filled"; fillcolor="#dbeafe"; color="#2563eb";
+    registry [label="ToolRegistry (MCP client)\ndiscovery · capability map\nJSON-schema validation\nread-only cache · error normalisation"];
+    fs [label="MCP server: filesystem\nlist/read/write/delete/search\nstat_files · tree_fingerprint\nsandboxed · sha256 guards · dry-run", fillcolor="#eff6ff"];
+    sh [label="MCP server: shell\nrun_command (allow-list,\nno shell ops, timeout, truncation)", fillcolor="#eff6ff"];
+  }
+
+  llm [label="LLM provider\nAnthropic · OpenAI · Replay\ncomplete_json (+1 repair)", fillcolor="#ede9fe"];
+  tracer [label="Tracer\nJSONL spans: node/tool/llm/\ndecision/memory/feedback\n→ live stream + /trace", fillcolor="#f3f4f6"];
+  ws [label="Target workspace\n(task-manager API)", shape=folder, fillcolor="#f9fafb"];
+
+  user -> router [label="request"];
+  router -> traj;
+  traj -> working [dir=both];
+  traj -> session [label="retrieve / promote", dir=both];
+  traj -> persistent [label="prefs · lessons", dir=both];
+  traj -> llm [label="plan · fix · explain"];
+  traj -> registry [label="capabilities"];
+  traj -> parsers; traj -> policies; traj -> loop; traj -> journal;
+  registry -> fs [label="stdio"]; registry -> sh [label="stdio"];
+  fs -> ws; sh -> ws [label="pytest · ruff"];
+  traj -> tracer [style=dotted]; registry -> tracer [style=dotted]; llm -> tracer [style=dotted];
+  tracer -> user [style=dotted, label="streamed progress"];
+}

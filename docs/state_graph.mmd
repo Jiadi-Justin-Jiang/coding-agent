@@ -1,0 +1,98 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	route(route)
+	load_context(load_context)
+	recover(recover)
+	finalize(finalize)
+	chat_answer(chat_answer)
+	correct_decide(correct_decide)
+	correct_undo(correct_undo)
+	correct_revise(correct_revise)
+	edit_locate(edit_locate)
+	edit_read(edit_read)
+	edit_plan(edit_plan)
+	edit_apply(edit_apply)
+	edit_patch_retry(edit_patch_retry)
+	edit_verify(edit_verify)
+	edit_fix(edit_fix)
+	edit_rollback(edit_rollback)
+	explore_locate(explore_locate)
+	explore_read(explore_read)
+	explore_explain(explore_explain)
+	remember_store(remember_store)
+	run_execute(run_execute)
+	run_analyze(run_analyze)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> route;
+	chat_answer -.-> finalize;
+	chat_answer -.-> recover;
+	correct_decide -.-> correct_revise;
+	correct_decide -.-> correct_undo;
+	correct_decide -.-> explore_read;
+	correct_decide -.-> finalize;
+	correct_decide -.-> recover;
+	correct_revise -.-> edit_read;
+	correct_revise -.-> finalize;
+	correct_revise -.-> recover;
+	correct_undo -.-> finalize;
+	correct_undo -.-> recover;
+	edit_apply -.-> edit_patch_retry;
+	edit_apply -.-> edit_verify;
+	edit_apply -.-> finalize;
+	edit_apply -.-> recover;
+	edit_fix -.-> edit_apply;
+	edit_fix -.-> edit_rollback;
+	edit_fix -.-> recover;
+	edit_locate -.-> edit_read;
+	edit_locate -.-> finalize;
+	edit_locate -.-> recover;
+	edit_patch_retry -.-> edit_fix;
+	edit_patch_retry -.-> edit_plan;
+	edit_patch_retry -.-> edit_rollback;
+	edit_patch_retry -.-> recover;
+	edit_plan -.-> edit_apply;
+	edit_plan -.-> finalize;
+	edit_plan -.-> recover;
+	edit_read -.-> edit_plan;
+	edit_read -.-> finalize;
+	edit_read -.-> recover;
+	edit_rollback -.-> finalize;
+	edit_rollback -.-> recover;
+	edit_verify -.-> edit_fix;
+	edit_verify -.-> edit_rollback;
+	edit_verify -.-> finalize;
+	edit_verify -.-> recover;
+	explore_explain -.-> finalize;
+	explore_explain -.-> recover;
+	explore_locate -.-> explore_explain;
+	explore_locate -.-> explore_read;
+	explore_locate -.-> recover;
+	explore_read -.-> explore_explain;
+	explore_read -.-> recover;
+	load_context -.-> chat_answer;
+	load_context -.-> correct_decide;
+	load_context -.-> edit_locate;
+	load_context -.-> explore_locate;
+	load_context -.-> recover;
+	load_context -.-> remember_store;
+	load_context -.-> run_execute;
+	recover --> finalize;
+	remember_store -.-> finalize;
+	remember_store -.-> recover;
+	route -.-> load_context;
+	route -.-> recover;
+	run_analyze -.-> edit_locate;
+	run_analyze -.-> finalize;
+	run_analyze -.-> recover;
+	run_execute -.-> finalize;
+	run_execute -.-> recover;
+	run_execute -.-> run_analyze;
+	finalize --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

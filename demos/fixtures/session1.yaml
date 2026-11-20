@@ -1,0 +1,51 @@
+# Replay fixture: canned model text for each LLM call in demos/session1.txt.
+# Tool calls, routing, memory, verification and rollback all run for real.
+- purpose: explore.explain
+  match: "one-line summaries"
+  response: |
+    It's a small Flask task-manager API:
+
+    | File | Role |
+    |---|---|
+    | `main.py` | App factory `create_app()` — wires the store and registers the `tasks` and `users` blueprints |
+    | `models.py` | `Task`/`User` dataclasses and `TaskStore`, an in-memory store with id counters |
+    | `routes/tasks.py` | CRUD endpoints for tasks (`POST/GET /tasks`, `GET/PATCH/DELETE /tasks/<id>`) |
+    | `routes/users.py` | Create a user (with email validation) and list a user's tasks |
+    | `utils/helpers.py` | `parse_int`, `paginate`, `is_valid_email` helpers |
+    | `tests/conftest.py` | pytest fixture providing a Flask test client with a fresh store |
+    | `tests/test_tasks.py` | Tests for create, list/pagination and status updates |
+    | `ruff.toml`, `README.md` | Lint config and usage notes |
+
+    Note there are no tests for `routes/users.py` yet.
+- purpose: explore.explain
+  match: "how tasks are created"
+  response: |
+    Tasks are created by `POST /tasks` → `create_task()` in `routes/tasks.py:15`:
+
+    1. Parses the JSON body with `request.get_json(silent=True) or {}` (`routes/tasks.py:17`), so a missing/invalid body becomes `{}`.
+    2. Reads `title` with a default of `""` (`routes/tasks.py:18`) — **no validation**, so an empty or whitespace-only title is accepted.
+    3. Calls `TaskStore.add_task()` (`models.py:44`), which assigns the next id from an `itertools.count`, builds a `Task` with status `"todo"` and a UTC `created_at`, and stores it in a dict.
+    4. Returns the task as JSON with **201 Created** (`routes/tasks.py:24`).
+
+    The store is injected via `app.config["STORE"]` in `create_app()` (`main.py:12`), which is how tests get a fresh store per test.
+- purpose: edit.plan
+  match: "empty titles"
+  response: |
+    {"summary": "Reject missing, non-string, empty or whitespace-only titles in POST /tasks with a 400, strip surrounding whitespace, and add tests for the new behaviour.",
+     "edits": [
+      {"path": "routes/tasks.py",
+       "search": "    payload = request.get_json(silent=True) or {}\n    title = payload.get(\"title\", \"\")\n    task = _store().add_task(\n        title=title,",
+       "replace": "    payload = request.get_json(silent=True) or {}\n    title = payload.get(\"title\")\n    if not isinstance(title, str) or not title.strip():\n        return jsonify({\"error\": \"title must be a non-empty string\"}), 400\n    task = _store().add_task(\n        title=title.strip(),"},
+      {"path": "tests/test_tasks.py",
+       "search": "def test_list_tasks_pagination(client):",
+       "replace": "def test_create_task_rejects_blank_titles(client):\n    for bad in ({}, {\"title\": \"\"}, {\"title\": \"   \"}, {\"title\": 42}):\n        resp = client.post(\"/tasks\", json=bad)\n        assert resp.status_code == 400, bad\n\n\ndef test_list_tasks_pagination(client):"}
+     ]}
+- purpose: edit.plan
+  match: "test_list_tasks_pagination"
+  response: |
+    {"summary": "Fix the off-by-one in paginate(): pages are 1-indexed, so the slice must start at (page - 1) * per_page. The test is correct; the helper was skipping the first page.",
+     "edits": [
+      {"path": "utils/helpers.py",
+       "search": "    start = page * per_page\n",
+       "replace": "    start = (max(page, 1) - 1) * per_page\n"}
+     ]}

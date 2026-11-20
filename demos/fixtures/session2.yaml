@@ -1,0 +1,44 @@
+- purpose: route
+  match: "500 for unknown ids"
+  response: |
+    {"trajectory": "edit", "confidence": 0.93,
+     "reason": "Asks to change endpoint behaviour (500 -> 404). 'instead' refers to the code's current behaviour, not to a previous agent action, so this is an edit, not a correction."}
+- purpose: edit.plan
+  match: "500 for unknown ids"
+  response: |
+    {"summary": "Return a 404 JSON error from GET /tasks/<id> when the task doesn't exist instead of raising KeyError (500), and add a regression test.",
+     "edits": [
+      {"path": "routes/tasks.py",
+       "search": "from flask import Blueprint, current_app, jsonify, request",
+       "replace": "from flask import Blueprint, abort, current_app, jsonify, request"},
+      {"path": "routes/tasks.py",
+       "search": "def get_task(task_id: int):\n    task = _store().tasks[task_id]\n    return jsonify(task.to_dict())",
+       "replace": "def get_task(task_id: int):\n    task = _store().tasks.get(task_id)\n    if task is None:\n        return jsonify({\"error\": f\"Task {task_id} does not exist\"}), 404\n    return jsonify(task.to_dict())"},
+      {"path": "tests/test_tasks.py",
+       "search": "",
+       "replace": "\n\ndef test_get_missing_task_returns_404(client):\n    resp = client.get(\"/tasks/999\")\n    assert resp.status_code == 404\n"}
+     ]}
+- purpose: edit.fix
+  match: "has no docstring"
+  response: |
+    {"summary": "Add the docstrings required by the user's preference to the two functions I edited.",
+     "edits": [
+      {"path": "routes/tasks.py",
+       "search": "def get_task(task_id: int):\n    task = _store().tasks.get(task_id)",
+       "replace": "def get_task(task_id: int):\n    \"\"\"Return one task as JSON, or a 404 error if it does not exist.\"\"\"\n    task = _store().tasks.get(task_id)"},
+      {"path": "tests/test_tasks.py",
+       "search": "def test_get_missing_task_returns_404(client):\n",
+       "replace": "def test_get_missing_task_returns_404(client):\n    \"\"\"Unknown task ids yield 404, not an unhandled KeyError.\"\"\"\n"}
+     ]}
+- purpose: edit.plan
+  match: "REJECTED"
+  response: |
+    {"summary": "Return 404 with {\"error\": \"task not found\"} for unknown ids — the same message update_task and delete_task use — with docstrings and a test that pins the message.",
+     "edits": [
+      {"path": "routes/tasks.py",
+       "search": "def get_task(task_id: int):\n    task = _store().tasks[task_id]\n    return jsonify(task.to_dict())",
+       "replace": "def get_task(task_id: int):\n    \"\"\"Return one task as JSON, or a 404 error if it does not exist.\"\"\"\n    task = _store().tasks.get(task_id)\n    if task is None:\n        return jsonify({\"error\": \"task not found\"}), 404\n    return jsonify(task.to_dict())"},
+      {"path": "tests/test_tasks.py",
+       "search": "",
+       "replace": "\n\ndef test_get_missing_task_returns_404(client):\n    \"\"\"Unknown ids return the same 404 payload as the other task endpoints.\"\"\"\n    resp = client.get(\"/tasks/999\")\n    assert resp.status_code == 404\n    assert resp.get_json() == {\"error\": \"task not found\"}\n"}
+     ]}

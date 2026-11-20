@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coding-agent"
+version = "0.1.0"
+description = "LangGraph coding agent with MCP tools, tiered memory and feedback loops"
+requires-python = ">=3.10"
+dependencies = [
+  "langgraph>=1.0",
+  "mcp>=1.9,<2",
+  "anthropic>=0.40",
+  "pyyaml>=6",
+  "jsonschema>=4",
+  "rich>=13",
+  "ruff>=0.5",
+  "pytest>=8",
+  "flask>=3",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.40"]
+
+[project.scripts]
+coding-agent = "coding_agent.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["coding_agent*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+extend-exclude = ["target_project"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I", "UP"]
+ignore = ["B904"]

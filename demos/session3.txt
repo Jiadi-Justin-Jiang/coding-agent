@@ -1,0 +1,7 @@
+# Session 3 — failure handling: forget a preference, dry run, an edit that breaks tests and
+# can't be fixed (loop guard → automatic rollback), then a successful retry with guidance.
+Forget the docstring preference
+dry run: rename the Task field "title" to "name" in the model and the task routes
+Rename the Task field "title" to "name" in the model and the task routes
+Rename the Task field "title" to "name" everywhere, and update the tests to match
+/memory rename
